@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routers import health_router
+from app.routers import health_router, messages_router
 
 
 def create_app() -> FastAPI:
@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health_router, prefix=settings.API_V1_STR)
+    app.include_router(messages_router, prefix=settings.API_V1_STR)
 
     @app.get("/")
     def root() -> dict:
