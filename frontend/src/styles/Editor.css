@@ -1,0 +1,74 @@
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.editor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.editor-toolbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.component-name-input {
+  background: transparent;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: var(--space-1) var(--space-2);
+}
+
+.component-name-input:hover {
+  border-color: var(--border-color);
+}
+
+.component-name-input:focus {
+  border-color: var(--border-focus);
+  background: var(--bg-primary);
+}
+
+.workspace {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.workspace-editor {
+  flex: 1;
+  min-width: 300px;
+  border-right: 1px solid var(--border-color);
+}
+
+.workspace-preview {
+  flex: 1.5;
+  min-width: 400px;
+}
+
+.workspace-ai {
+  width: 350px;
+  min-width: 350px;
+  max-width: 400px;
+}
+
+/* Make Monoco Editor background match our theme */
+.monaco-editor {
+  padding-top: var(--space-2);
+}

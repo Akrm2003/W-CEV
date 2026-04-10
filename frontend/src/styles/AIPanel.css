@@ -1,0 +1,88 @@
+.ai-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-tertiary);
+  border-left: 1px solid var(--border-color);
+}
+
+.ai-header {
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ai-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.text-accent {
+  color: var(--accent-primary);
+}
+
+.ai-body {
+  flex: 1;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.ai-welcome {
+  background: var(--bg-primary);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.prompt-suggestions {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.prompt-suggestions span {
+  display: inline-block;
+  padding: var(--space-2);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.prompt-suggestions span:hover {
+  border-color: var(--border-focus);
+  color: var(--text-primary);
+}
+
+.ai-input-area {
+  padding: var(--space-4);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ai-input-area textarea {
+  resize: none;
+  border-color: var(--border-color);
+  background: var(--bg-tertiary);
+  font-size: 0.9rem;
+}
+
+.generate-btn {
+  width: 100%;
+  padding: var(--space-3);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
