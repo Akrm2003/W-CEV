@@ -1,22 +1,23 @@
 import json
-import os
 import re
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import PlainTextResponse
 from openai import OpenAI
-from dotenv import load_dotenv
 from pydantic import BaseModel
 
-load_dotenv()
+from app.core.config import get_settings
 
-if not os.getenv("OPENAI_API_KEY"):
-    raise ValueError("OPENAI_API_KEY not found in environment variables")
+settings = get_settings()
 
-if os.getenv("OPENAI_API_BASE_URL"):
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_BASE_URL"))
+if not settings.OPENAI_API_KEY:
+    import warnings
+    warnings.warn("OPENAI_API_KEY not set — AI generation will not work")
+    client = None
 else:
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client_kwargs = {"api_key": settings.OPENAI_API_KEY}
+    if settings.OPENAI_API_BASE_URL:
+        client_kwargs["base_url"] = settings.OPENAI_API_BASE_URL
+    client = OpenAI(**client_kwargs)
 
 router = APIRouter(tags=["messages"])
 
@@ -25,18 +26,24 @@ class ComponentRequest(BaseModel):
     message: str
 
 
-class LLMComponentResponse(BaseModel):
+class GeneratedComponent(BaseModel):
     component_name: str
     summary: str
     html: str
 
 
-def response_schema() -> str:
-    return json.dumps(LLMComponentResponse.model_json_schema(), indent=2)
+class GenerateResponse(BaseModel):
+    component_name: str
+    summary: str
+    html: str
 
 
-def generate_prompt(message: str):
-    schema = response_schema()
+def _response_schema() -> str:
+    return json.dumps(GeneratedComponent.model_json_schema(), indent=2)
+
+
+def _generate_prompt(message: str) -> str:
+    schema = _response_schema()
     return f"""
     You are a meticulous front-end engineer who delivers a single self-contained HTML document.
     Requirements:
@@ -49,6 +56,7 @@ def generate_prompt(message: str):
     - Avoid referencing external assets (fonts, images, CDNs). Use base64 data URIs if needed.
     - Comment tricky parts of CSS/JS
     - Ensure the component works standalone when saved as index.html
+    - Make it visually stunning and production-quality
 
     User request:
     {message}
@@ -68,14 +76,17 @@ def generate_prompt(message: str):
     """
 
 
-@router.post("/messages/create_component", response_class=PlainTextResponse)
+@router.post("/messages/create_component", response_model=GenerateResponse)
 def create_component(payload: ComponentRequest):
-    prompt = generate_prompt(payload.message)
+    """Generate a web component using AI."""
+    if client is None:
+        raise HTTPException(status_code=503, detail="AI service not configured — set OPENAI_API_KEY")
+
+    prompt = _generate_prompt(payload.message)
 
     try:
-        model = os.getenv("MODEL", "gpt-4o-mini")
         completion = client.chat.completions.create(
-            model=model,
+            model=settings.MODEL,
             messages=[
                 {
                     "role": "system",
@@ -94,11 +105,15 @@ def create_component(payload: ComponentRequest):
     try:
         raw_content = completion.choices[0].message.content
         payload_dict = _extract_json_payload(raw_content)
-        llm_response = LLMComponentResponse(**payload_dict)
+        llm_response = GeneratedComponent(**payload_dict)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Unable to parse LLM response: {exc}") from exc
 
-    return llm_response.html
+    return GenerateResponse(
+        component_name=llm_response.component_name,
+        summary=llm_response.summary,
+        html=llm_response.html,
+    )
 
 
 JSON_BLOCK_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)

@@ -1,14 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
-from app.routers import health_router, messages_router
+from app.core.database import init_db
+from app.routers import health_router, messages_router, components_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan — run DB init on startup."""
+    await init_db()
+    yield
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
 
-    app = FastAPI(title=settings.PROJECT_NAME)
+    app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
     if settings.BACKEND_CORS_ORIGINS.strip() == "*":
         allow_origins = ["*"]
@@ -29,6 +39,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router, prefix=settings.API_V1_STR)
     app.include_router(messages_router, prefix=settings.API_V1_STR)
+    app.include_router(components_router, prefix=settings.API_V1_STR)
 
     @app.get("/")
     def root() -> dict:
