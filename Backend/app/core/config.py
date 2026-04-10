@@ -14,6 +14,14 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
 
+    # Database
+    DATABASE_URL: str = "sqlite+aiosqlite:///./wcev.db"
+
+    # OpenAI / LLM
+    OPENAI_API_KEY: str = ""
+    OPENAI_API_BASE_URL: str = ""
+    MODEL: str = "gpt-4o-mini"
+
 
 @lru_cache
 def get_settings() -> Settings:
